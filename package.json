@@ -1,0 +1,35 @@
+{
+  "name": "ssb",
+  "version": "0.0.0",
+  "description": "command line server + browserify",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "node-sass sass/ -o public/style",
+    "watch:css": "nodemon -e scss -x \"npm run build:css\"",
+    "prefix": "postcss --use autoprefixer -o public/style/main.css public/style/main.css",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "bundle": "browserify entry.js -o public/scripts/bundle.js -t brfs -d",
+    "watch:js": "watchify entry.js -o public/scripts/bundle.js -t brfs -d",
+    "watch": "npm run watch:js & npm run watch:css",
+    "build": "npm run prefix",
+    "develop": "parallelshell 'npm run start' 'npm run watch'",
+    "dev-start": "nodemon server.js"
+  },
+  "repository": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "answerver": "^0.5.0",
+    "blob-to-buffer": "^1.2.3",
+    "ecstatic": "^1.3.1",
+    "file-button": "^1.0.2",
+    "hyperquest": "^1.2.0",
+    "non-private-ip": "^1.3.0",
+    "pull-stream": "^3.0.1",
+    "run-series": "^1.1.4",
+    "ssb-client": "^2.0.0",
+    "stream-to-pull-stream": "^1.6.6",
+    "xhr": "^2.2.0"
+  }
+}
