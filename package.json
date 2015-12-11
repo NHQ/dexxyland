@@ -4,7 +4,7 @@
   "description": "command line server + browserify",
   "main": "index.js",
   "scripts": {
-    "start": "browserify entry.js -o public/bunde.js && node server.js"
+    "start": "browserify entry.js -o public/bundle.js && node server.js"
   },
   "repository": "",
   "author": "",
