@@ -19,14 +19,48 @@ server.on('listening', function(){
 })
 
 function handler (req, res){
+
   if(req.method === 'POST'){
-    var q = JSON.parse(new Buffer(req.url.slice(1), 'base64').toString('utf8'))
-    sboot(req, res, q)
+    var p = req.url.split('/')
+    p.shift()
+    var q = p[1].length ? JSON.parse(new Buffer(p[1], 'base64').toString('utf8')) : {}
+    if(p[0] === 'blob') sblob(req, res, q)
+    else if(p[0] === 'hash') hashBlob(req, res, q)
+    else if(p[0] === 'text'){
+      ssbc(function(e, sbot){
+        sbot.publish({type: 'post', text: q.text}, function(err){
+          if(err) console.log(err)
+          res.writeHead(err ? 400 : 200)
+          res.end()
+        })
+      })
+    }
   }
   
   else serve(req, res)
+
+  function hashBlob(req, res, q){
+    ssbc(function(err, sbot){
+      if(err) console.log(err)
+      var hasher = createHash()
+      pull(
+        toPull.source(req),
+        hasher,
+        sbot.blobs.add(function(err){
+          if(err) console.log(err)
+          res.writeHead(200, {'content-type': 'application/json'})
+          var data = {}
+          data.hash = hasher.digest
+          data.name = q.name
+          data.type = q.type
+          res.end(JSON.stringify(data))
+        })
+      )
+    })
+  }
+
   
-  function sboot(req, res, q){
+  function sblob(req, res, q){
     ssbc(function(err, sbot){
       if(err) console.log(err)
       var hasher = createHash()
@@ -40,7 +74,7 @@ function handler (req, res){
           } 
           sbot.publish({type: 'post', text: q.text, mentions: {
             link: hasher.digest,
-            name: q.title
+            name: q.name
           }}, function(err){
             if(err) console.log(err)
             res.writeHead(err ? 400 : 200)
