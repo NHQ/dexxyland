@@ -28,7 +28,7 @@ function handler (req, res){
     else if(p[0] === 'hash') hashBlob(req, res, q)
     else if(p[0] === 'text'){
       ssbc(function(e, sbot){
-        sbot.publish({type: 'post', text: q.text}, function(err){
+        sbot.publish({type: 'post', text: q.text, mentions: q.mentions}, function(err){
           if(err) console.log(err)
           res.writeHead(err ? 400 : 200)
           res.end()
@@ -69,17 +69,8 @@ function handler (req, res){
         hasher,
         sbot.blobs.add(function(err){
           if(err) console.log(err)
-          if(q.type.match('image/*')){
-            q.text += '\n\n!['+q.title+']('+hasher.digest+')' 
-          } 
-          sbot.publish({type: 'post', text: q.text, mentions: {
-            link: hasher.digest,
-            name: q.name
-          }}, function(err){
-            if(err) console.log(err)
-            res.writeHead(err ? 400 : 200)
-            res.end()
-          })
+          res.writeHead(err ? 400 : 200)
+          res.end(JSON.stringify({hash: hasher.digest}))
         })
       )
     })

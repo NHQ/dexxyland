@@ -1,22 +1,86 @@
+var crypto = require('crypto')
+var createHash = require('sha.js')
+
+var pull = require('pull-stream')
+var marked = require('marked')
+var flavors = require('markdown-flavor-maker')()
 var filebutton = require('file-button')
 var runp = require('run-parallel')
 var concat = require('concat-stream')
+var lookup = require('mime-types').lookup
+
+var msg = require('../../ssb-ref')
+
+marked.setOptions({
+  smartyPants: true, 
+  sanitize: true
+})
+
+flavors.bracketize('<img src=', '>', '<span data-halp="true" data-src=', '></span>')
+
+/*
+flavors.bracketize('<img', '>', function(text){
+  var src = text.split('"')[1]
+  var type = lookup(src).match('(image|audio|video)\/*')
+  if(type[1] === 'image') return ['<img', '>', text]// you can't return a value that matches your rules, in this case returning an img tag where there was one 
+  else{
+    return ['<' + type[1], '>', text]
+  }
+})
+*/
+
 var button = document.querySelector('button')
 var post = document.querySelector('#post')
+var textarea = document.querySelector('textarea')
+var preview = document.querySelector('#preview')
 var _import = require('./import')
 var xhr = require('hyperquest')
 var _file = null
 var _files = []
 var hashedBlobs = []
+var FILES = []
+
+
+textarea.addEventListener('keyup', function(e){
+  preview.innerHTML = ''
+  var val = this.value
+  var dummy = document.createElement('div')
+  var postMark = marked(val)
+  dummy.innerHTML = flavors.render(marked(val))
+  var alts = dummy.querySelectorAll('[data-halp=true]')
+  alts = Array.prototype.map.call(alts, function(e){
+    var src = e.dataset['src']
+    var ext = src.slice('.')[-1]
+    var match = lookup(src).match('(audio|video|image)\/*')
+    var type = null
+    if(match) type = match[1] === 'image' ? 'img' : match[1]
+    if(type){
+      var node = document.createElement(type)
+      node.src = src
+      if(type === 'video' || type === 'audio') node.controls = true
+      return [e, node]
+      
+    }
+    else return false
+  }).filter(Boolean).forEach(function(e){
+    e[0].parentNode.replaceChild(e[1], e[0])
+  })
+  preview.innerHTML = dummy.innerHTML.toString()
+  
+})
 
 filebutton.create({multiple: true}).on('fileinput',function(input){
   _import(input.files, function(err, files){
     if(err) console.log(err)
-    _files = files
-    _file = files[0]
-    files.forEach(function(e){
-      console.log(e)
+    files = files.map(function(e){
+      var hash = createHash('sha256')
+      hash.update(e)
+      e.hash = '&' + hash.digest('base64') + '.sha256'
+      var val = e.type.match('image/*') ? '\n\n!['+e.name+']('+e.hash+')' : '\n\n['+e.name+']('+e.hash+')'
+      document.querySelector('textarea').value += val 
+      return e
     })
+    FILES = FILES.concat(files)
   })
 }).mount(button)
 
@@ -25,44 +89,77 @@ var last = 0
 post.addEventListener('click', function(e){
   if(e.timestamp - last < 300) return
   last = e.timestamp
-  if(_files.length){
+  var t = document.querySelector('textarea').value
+
+  _files = FILES.map(function(e){
+    var r = new RegExp('['+e.hash+']')
+    if(r.test(t)) return e
+    else return false
+  }).filter(Boolean)
+  if(true || _files.length){
     var tasks = _files.map(function(e){
       var dat = {}
       dat.type = e.type
       dat.name = e.name
       dat.size = e.size
-      dat = new Buffer(JSON.stringify(dat)).toString('base64')
+      dat.hash = e.hash
       return function(cb){
-        var req = xhr.post(window.location.origin + '/hash/' + dat, function(e, r){
+        var req = xhr.post(window.location.origin + '/blob/', function(e, r){
           if(e) cb(e, null)
           r.pipe(concat(function(res){
             res = JSON.parse(res)
-            console.log(res)
-            hashedBlobs.push(res)
-            cb(null, res)
+            if(!(res.hash === dat.hash)){
+              var err = new Error({server: res.hash, local: dat.hash})
+              cb(err, null)
+            }
+            else {
+              hashedBlobs.push(res)
+              cb(null, res)
+            }
           }))
         })
         req.end(e)
       }
     })
     runp(tasks, function(e, res){
-      console.log(e, res)
-      if(!e){
-        hashedBlobs.forEach(function(e){
-          var val = e.type.match('image/*') ? '\n\n!['+e.name+']('+e.hash+')' : '\n\n['+e.name+']('+e.hash+')'
-          document.querySelector('textarea').value += val 
-        })
+      if(!e){ // blobs uploaded
         var text = document.querySelector('textarea').value
-        text = new Buffer(JSON.stringify({text: text})).toString('base64')
+        var mentions = _files.map(function(e){
+          return {link: e.hash, name: e.name, type: e.type, size: e.size}
+        })
+        var otherMentions = msg.mentionIt(text)
+        otherMentions = otherMentions.filter(function(e){
+          var dupe = false
+          mentions.forEach(function(m){
+            if(m.link === e.link) dupe = true
+          })
+          return !dupe
+        })
+        mentions = mentions.concat(otherMentions)
+        text = new Buffer(JSON.stringify({text: text, mentions: mentions})).toString('base64')
+        textarea.value = JSON.stringify(text)    
+        
         var req = xhr.post(window.location.origin + '/text/' + text, function(e,r){
-          //console.log(e,r)
+          console.log(e,r)
         })
         req.end()
+      
       }
     })
   }
 })
 
+  function createHash(){
+
+    var hash = crypto.createHash('sha256'), hasher
+
+    return hasher = pull.through(function(data){
+      hash.update(data)
+    }, function(){
+      hasher.digest = '&' + hash.digest('base64') + '.sha256'
+    })
+
+  }
 /*
 post.addEventListener('click', function(){
   var body = _file ? _file : undefined 
