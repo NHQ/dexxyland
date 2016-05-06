@@ -28,7 +28,6 @@
     "pull-stream": "^3.0.1",
     "run-parallel": "^1.1.4",
     "run-series": "^1.1.4",
-    "ssb-client": "^2.0.0",
     "stream-to-pull-stream": "^1.6.6",
     "swarmlog": "^1.4.0",
     "webtorrent": "^0.81.2",
