@@ -14,7 +14,7 @@ var log = swarmlog({
   sodium: require('chloride/browser'),
   db: memdb(),
   valueEncoding: 'json',
-  hubs: [ 'http://10.0.0.2:11111' ]
+  hubs: [ 'http://10.0.0.2:11111', 'https://signalhub.mafintosh.com' ]
 })
 
 log.createReadStream({ live: true })
