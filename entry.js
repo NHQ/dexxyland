@@ -77,7 +77,9 @@ filebutton.create({multiple: true}).on('fileinput',function(input){
     if(err) console.log(err)
     files = files.map(function(e){
       var hash = createHash('sha256')
+      console.log('hash', hash)
       hash.update(e)
+      console.log('hash update', hash)
       e.hash = '&' + hash.digest('base64') + '.sha256'
       var val = e.type.match('image/*') ? '\n\n!['+e.name+']('+e.hash+')' : '\n\n['+e.name+']('+e.hash+')'
       document.querySelector('textarea').value += val 
@@ -141,17 +143,17 @@ post.addEventListener('click', function(e){
   }
 })
 
-  function createHash(){
+// function createHash(){
 
-    var hash = crypto.createHash('sha256'), hasher
+//   var hash = crypto.createHash('sha256'), hasher
 
-    return hasher = pull.through(function(data){
-      hash.update(data)
-    }, function(){
-      hasher.digest = '&' + hash.digest('base64') + '.sha256'
-    })
+//   return hasher = pull.through(function(data){
+//     hash.update(data)
+//   }, function(){
+//     hasher.digest = '&' + hash.digest('base64') + '.sha256'
+//   })
+// }
 
-  }
 /*
 post.addEventListener('click', function(){
   var body = _file ? _file : undefined 
