@@ -3,20 +3,23 @@ var createHash = require('sha.js')
 
 var pull = require('pull-stream')
 var marked = require('marked')
-var flavors = require('markdown-flavor-maker')()
 var filebutton = require('file-button')
 var runp = require('run-parallel')
 var concat = require('concat-stream')
 var lookup = require('mime-types').lookup
 
-var msg = require('../../ssb-ref')
+var msg = require('jssb-ref')
+var flavors = require('markdown-av')
+var bot = require('./swarm')
+var webtorrent = require('webtorrent')
+
+var wt = new webtorrent
 
 marked.setOptions({
   smartyPants: true, 
   sanitize: true
 })
 
-flavors.bracketize('<img src=', '>', '<span data-halp="true" data-src=', '></span>')
 
 /*
 flavors.bracketize('<img', '>', function(text){
@@ -45,8 +48,8 @@ textarea.addEventListener('keyup', function(e){
   preview.innerHTML = ''
   var val = this.value
   var dummy = document.createElement('div')
-  var postMark = marked(val)
-  dummy.innerHTML = flavors.render(marked(val))
+  //var postMark = marked(val)
+  dummy.innerHTML = flavors(val)
   var alts = dummy.querySelectorAll('[data-halp=true]')
   alts = Array.prototype.map.call(alts, function(e){
     var src = e.dataset['src']
@@ -104,28 +107,19 @@ post.addEventListener('click', function(e){
       dat.size = e.size
       dat.hash = e.hash
       return function(cb){
-        var req = xhr.post(window.location.origin + '/blob/', function(e, r){
-          if(e) cb(e, null)
-          r.pipe(concat(function(res){
-            res = JSON.parse(res)
-            if(!(res.hash === dat.hash)){
-              var err = new Error({server: res.hash, local: dat.hash})
-              cb(err, null)
-            }
-            else {
-              hashedBlobs.push(res)
-              cb(null, res)
-            }
-          }))
+        console.log(e)
+        wt.seed([e], function(torrent){
+          e.infoHash = torrent.infoHash
+          e.magnetURI = torrent.magnetURI
+          cb(null, torrent)
         })
-        req.end(e)
       }
     })
     runp(tasks, function(e, res){
       if(!e){ // blobs uploaded
         var text = document.querySelector('textarea').value
         var mentions = _files.map(function(e){
-          return {link: e.hash, name: e.name, type: e.type, size: e.size}
+          return {link: e.hash, name: e.name, type: e.type, size: e.size, infoHash: e.infoHash, magnetURI: e.magnetURI}
         })
         var otherMentions = msg.mentionIt(text)
         otherMentions = otherMentions.filter(function(e){
@@ -136,13 +130,11 @@ post.addEventListener('click', function(e){
           return !dupe
         })
         mentions = mentions.concat(otherMentions)
-        text = new Buffer(JSON.stringify({text: text, mentions: mentions})).toString('base64')
+        text = new Buffer(JSON.stringify({text: text, mentions: mentions})).toString('utf8')
         textarea.value = JSON.stringify(text)    
-        
-        var req = xhr.post(window.location.origin + '/text/' + text, function(e,r){
-          console.log(e,r)
-        })
-        req.end()
+        bot.append(textarea.value, function(err, da){
+          //console.log(err, da)
+        }) 
       
       }
     })
