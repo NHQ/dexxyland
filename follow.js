@@ -1,7 +1,7 @@
 var swarmlog = require('swarmlog')
 var memdb = require('memdb')
 var h = require('hyperscript')
-var flavors = require('markdown-av')
+var flavors = require('../markdown-av')
 
 var webtorrent = require('webtorrent')
 var wt = new webtorrent
@@ -23,22 +23,22 @@ log.createReadStream({ live: true })
     //  console.log(heads)
     })
     data = JSON.parse(JSON.parse(data.value))
-    console.log(data)
+    var parsed = flavors(data.text, function(node, hash){
+      console.log(node, hash) 
+        wt.add(hash, function(torrent){
+          torrent.files.forEach(function(file){
+            var type = e.type.split('/')[0]
+            var node = type
+            if(type==='image')  node = 'img'
+            node.style.width = node.style.height = '101px'
+            file.appendTo(node)
+            document.body.appendChild(node)
+          })
+        })
+    })
     if(data.mentions){
       data.mentions.forEach(function(e){
         if(e.magnetURI){
-          wt.add(e.magnetURI, function(torrent){
-            torrent.files.forEach(function(file){
-              var type = e.type.split('/')[0]
-              var node = type
-              if(type==='image')  node = 'img'
-              node = h('p')
-              node.style.width = node.style.height = '101px'
-              console.log(node)
-              file.appendTo(node)
-              document.body.appendChild(node)
-            })
-          })
         }
       })
     }

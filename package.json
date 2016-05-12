@@ -19,7 +19,7 @@
     "hyperquest": "^1.2.0",
     "hyperscript": "^1.4.7",
     "jssb-ref": "^1.0.0",
-    "markdown-av": "^0.10.0",
+    "markdown-av": "^0.13.0",
     "markdown-flavor-maker": "^1.0.2",
     "marked": "^0.3.5",
     "memdb": "^1.3.1",
