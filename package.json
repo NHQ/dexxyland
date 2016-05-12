@@ -4,7 +4,8 @@
   "description": "command line server + browserify",
   "main": "index.js",
   "scripts": {
-    "start": "browserify entry.js -o public/bundle.js -d && browserify follow.js -o public/follow.js -d"
+    "start": "browserify entry.js -o public/bundle.js -d && browserify follow.js -o public/follow.js -d",
+    "watchify": "watchify entry.js -o public/bundle.js -v && watchify follow.js -o public/follow.js -v"
   },
   "repository": "",
   "author": "",
@@ -33,5 +34,8 @@
     "swarmlog": "^1.4.0",
     "webtorrent": "^0.81.2",
     "xhr": "^2.2.0"
+  },
+  "devDependencies": {
+    "parallelshell": "^2.0.0"
   }
 }
