@@ -1,15 +1,20 @@
+#dexxyland
+
+probably gonna become a dex forum or something
+
+dex is short for decentralized
+
+to develop you must have the following installed -g
+* watchify
+* signalhub
+* ecstatic
+
+
 ```
-git clone this sum o hot technology
 npm install
+npm run keygen
 npm start
-go there
-be that
 ```
 
-#### reqs
-
-you must 
-* have browserify installed
-* be running sbot or patchwork
-
+Warning: every time you ```npm run keygen```, the keys.json file is goinng to be overwritten.
 

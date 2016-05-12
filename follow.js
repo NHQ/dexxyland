@@ -10,11 +10,11 @@ wt.on('error', function(err){
   console.log(err)
 })
 var log = swarmlog({
-  publicKey: require('./keys2.json').public,
+  publicKey: require('./keys.json').public,
   sodium: require('chloride/browser'),
   db: memdb(),
   valueEncoding: 'json',
-  hubs: [ 'http://10.0.0.2:11111', 'https://signalhub.mafintosh.com' ]
+  hubs: [ 'http://localhost:11111', 'https://signalhub.mafintosh.com' ]
 })
 
 log.createReadStream({ live: true })

@@ -2,11 +2,11 @@ var swarmlog = require('swarmlog')
 var memdb = require('memdb')
 
 var log = swarmlog({
-  keys: require('./keys2.json'),
+  keys: require('./keys.json'),
   sodium: require('chloride/browser'),
   db: memdb(),
   valueEncoding: 'json',
-  hubs: [ 'http://10.0.0.2:11111']
+  hubs: [ 'http://localhost:11111', 'https://signalhub.mafiintosh.com']
 })
 
 log.createReadStream({live: true}).on('data', function(data){

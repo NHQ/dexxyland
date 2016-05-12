@@ -1,11 +1,14 @@
 {
-  "name": "ssb",
+  "name": "dexxyland",
   "version": "0.0.0",
-  "description": "command line server + browserify",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "browserify entry.js -o public/bundle.js -d && browserify follow.js -o public/follow.js -d",
-    "watchify": "watchify entry.js -o public/bundle.js -v && watchify follow.js -o public/follow.js -v"
+    "keygen" : "node -pe 'JSON.stringify(require(\"ssb-keys\").generate())' > keys.json",
+    "watch": "parallelshell 'watchify entry.js -o public/bundle.js -d'  'watchify follow.js -o public/follow.js -d'",
+    "listen" : "parallelshell 'signalhub listen -p 11111'",
+    "serve" : "ecstatic ./public -p 11001",
+    "start": "parallelshell 'npm run watch' 'npm run listen' 'npm run serve'" 
   },
   "repository": "",
   "author": "",
@@ -31,6 +34,7 @@
     "run-series": "^1.1.4",
     "sha.js": "^2.4.5",
     "stream-to-pull-stream": "^1.6.6",
+    "ssb-keys" : "^5.0.1",
     "swarmlog": "^1.4.0",
     "webtorrent": "^0.81.2",
     "xhr": "^2.2.0"
