@@ -1,7 +1,7 @@
 var swarmlog = require('swarmlog')
 var memdb = require('memdb')
 var h = require('hyperscript')
-var flavors = require('../markdown-av')
+var flavors = require('markdown-av')
 
 var webtorrent = require('webtorrent')
 var wt = new webtorrent
