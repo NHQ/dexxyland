@@ -20,18 +20,6 @@ marked.setOptions({
   sanitize: true
 })
 
-
-/*
-flavors.bracketize('<img', '>', function(text){
-  var src = text.split('"')[1]
-  var type = lookup(src).match('(image|audio|video)\/*')
-  if(type[1] === 'image') return ['<img', '>', text]// you can't return a value that matches your rules, in this case returning an img tag where there was one 
-  else{
-    return ['<' + type[1], '>', text]
-  }
-})
-*/
-
 var button = document.querySelector('button')
 var post = document.querySelector('#post')
 var textarea = document.querySelector('textarea')
@@ -107,7 +95,7 @@ post.addEventListener('click', function(e){
       dat.size = e.size
       dat.hash = e.hash
       return function(cb){
-        console.log(e)
+//        console.log(e)
         wt.seed([e], function(torrent){
           e.infoHash = torrent.infoHash
           e.magnetURI = torrent.magnetURI
@@ -134,6 +122,8 @@ post.addEventListener('click', function(e){
         textarea.value = JSON.stringify(text)    
         bot.append(textarea.value, function(err, da){
           //console.log(err, da)
+          if(err) console.log(err)
+          else FILES = []
         }) 
       
       }
@@ -141,35 +131,3 @@ post.addEventListener('click', function(e){
   }
 })
 
-// function createHash(){
-
-//   var hash = crypto.createHash('sha256'), hasher
-
-//   return hasher = pull.through(function(data){
-//     hash.update(data)
-//   }, function(){
-//     hasher.digest = '&' + hash.digest('base64') + '.sha256'
-//   })
-// }
-
-/*
-post.addEventListener('click', function(){
-  var body = _file ? _file : undefined 
-  var dat = {}
-  if(body){
-    dat.type = body.type
-    dat.name = body.name
-    dat.size = body.size
-  }
-  dat.text = document.querySelector('textarea').value || ''
-  var url = window.location.origin + '/'
-  if(body) url += 'blob/'
-  else url += 'text/'
-  url += new Buffer(JSON.stringify(dat)).toString('base64')
-  var req = xhr.post(url, function(er, res){
-    console.log(er, res)
-  })
-
-  req.end(body)
-})
-*/

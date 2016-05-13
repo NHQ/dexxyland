@@ -6,6 +6,7 @@
   "scripts": {
     "keygen" : "node -pe 'JSON.stringify(require(\"ssb-keys\").generate())' > keys.json",
     "watch": "parallelshell 'watchify entry.js -o public/bundle.js -d'  'watchify follow.js -o public/follow.js -d'",
+    "build": "browserify entry.js -o public/bundle.js -d &&  browserify follow.js -o public/follow.js -d",
     "listen" : "parallelshell 'signalhub listen -p 11111'",
     "serve" : "ecstatic ./public -p 11001",
     "start": "parallelshell 'npm run watch' 'npm run listen' 'npm run serve'" 
